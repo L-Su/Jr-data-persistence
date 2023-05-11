@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -11,12 +12,21 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
+
+    // current player name
+    private string m_name;
     
     private bool m_GameOver = false;
+    // best score: name and point
+    public int bestScore;
+    public string b_name;
+
+    public Button menuButton;
 
     
     // Start is called before the first frame update
@@ -36,6 +46,16 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        m_name = DataManager.Instance.m_name;
+
+        if (DataManager.Instance != null)
+        {
+            b_name = DataManager.Instance.b_name;
+            bestScore = DataManager.Instance.b_score;
+        }
+
+        
     }
 
     private void Update()
@@ -60,6 +80,8 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+
+        BestScoreText.text = $"Best Score: {b_name}: {bestScore}";
     }
 
     void AddPoint(int point)
@@ -72,5 +94,24 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        menuButton.gameObject.SetActive(true);
+        checkBestScore();
+    }
+
+    public void checkBestScore()
+    {
+        if (m_Points >= bestScore)
+        {
+            bestScore = m_Points;
+            b_name = m_name;
+            DataManager.Instance.b_score = bestScore;
+            DataManager.Instance.b_name = b_name;
+            DataManager.Instance.SaveBestScore();
+        }
+    }
+
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }
